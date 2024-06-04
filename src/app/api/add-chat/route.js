@@ -1,0 +1,173 @@
+import { NextResponse } from "next/server";
+import prisma from "../../../../prisma/db.config";
+
+const { z } = require("zod");
+
+const requestSchema = z.object({
+    userId: z.number(),
+    userChatId: z.number(),
+})
+
+export async function POST(request) {
+
+    try {
+        const json = await request.json();
+        const response = requestSchema.safeParse(json);
+
+        if (!response.success) {
+            return NextResponse.json({
+                message: response.error.message,
+                success: false
+            }, {
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                status: 400
+            })
+        }
+
+        // Get userId and userchat id from data
+        const { userChatId, userId } = response.data;
+
+        const user =await prisma.user.findFirst({
+            where: {
+                id: userId
+            }, select: {
+                username: true
+            }
+        })
+
+        // check if the user chats already exists..
+        // const exists = prisma.userChats.findFirst({
+        //     where: {
+        //         OR: [
+        //             {
+        //                 user_id: userId,
+        //                 chat: {
+        //                     userChats: {
+        //                         some: {
+        //                             user_id: userChatId
+        //                         }
+        //                     }
+        //                 }
+        //             },
+        //             {
+        //                 user_id: userChatId,
+        //                 chat: {
+        //                     userChats: {
+        //                         some: {
+        //                             user_id: userId
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //         ]
+        //     }
+        // })
+
+        // check if the user already have the chat..
+        // const exists = await prisma.chat.findFirst({
+        //     where: {
+        //         AND: [
+        //             {
+        //                 participants: {
+        //                     some: {
+        //                         id: userChatId
+        //                     }
+        //                 }
+        //             }
+        //         ]
+        //     }
+        // })
+
+        // const rp = await prisma.chat.create({
+        //     data: {
+        //         userChats: {
+        //             create: [
+        //                 { user: { connect: { id: userId } }},
+        //                 { user: { connect: { id: userChatId } }},
+        //             ]
+        //         }
+        //     }
+        // })
+
+        const rp = await prisma.userChats.findMany({
+            where: {
+                user_id: userId,
+            },
+            select: {
+                chat: {
+                    select: {
+                        userChats: {
+                            select: {
+                                user: {
+                                    select: {
+                                        username: true // Selecting only the username field
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        });
+
+        // console.log(rp[0].chat.userChats);
+        // console.log(rp[0].chat.userChats);
+        // console.log(rp);
+        const filteredResult = rp.map(chat => ({
+            username: chat.chat
+        }));
+
+        return NextResponse.json(filteredResult)
+        // if (exists) {
+        //     return NextResponse.json({
+        //         result: false,
+        //         message: "User already have this chat."
+        //     })
+        // }
+
+        // Create a chat
+        // const result = await prisma.chat.create({});
+
+        // Associate the chat with the user
+        // await prisma.userChats.create({
+        //     data: {
+        //         user: { connect: { id: userId } },
+        //         chat: { connect: { id: newChat.id } },
+        //     },
+        // });
+
+        prisma.$disconnect();
+
+        if (!result) {
+            return NextResponse.json({
+                result: false,
+                message: "Unable to add the chat"
+            }, {
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                status: 409
+            })
+        }
+
+        // Return user
+        return NextResponse.json({ result: true, message: "Chat added successfully" }, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            status: 200
+        })
+
+    } catch (error) {
+        console.log(error);
+        return NextResponse.json({
+            message: "Invalid data provided or something went wrong",
+            status: 400
+        }, {
+            status: 400
+        });
+    }
+}
+
