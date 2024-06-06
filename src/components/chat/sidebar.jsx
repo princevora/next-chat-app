@@ -1,19 +1,35 @@
 "use client"
 
 import { useUserContext } from '@/context/user'
-import { useSession } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import toast from 'react-hot-toast'
 
 export default function Sidebar() {
     const [user, setUser] = useState();
     const context = useUserContext();
 
     useEffect(() => {
-        if (context.userStatus == "success") {
+        if (context.userStatus == 1) {
             setUser(context?.userData?.username)
         }
     }, [context.userStatus]);
+
+    const handleLogOut = async (e) => {
+        // prevent Default
+        e.preventDefault();
+
+        try {
+            // Logout of the session
+            await signOut({
+                redirect: true
+            })
+
+        } catch (error) {
+            toast.error("Unable to logout")
+        }
+    }
 
     return (
         <div
@@ -83,11 +99,12 @@ export default function Sidebar() {
                         </p>
                     </div>
                     <div className="p-4 border-t border-gray-200 dark:border-neutral-700">
-                        <a
+                        <Link 
+                            onClick={handleLogOut}
                             className="flex justify-between items-center gap-x-3 py-2 px-3 text-sm text-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-300"
                             href="#"
                         >
-                            Sign in
+                            Log Out
                             <svg
                                 className="flex-shrink-0 size-4"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -104,7 +121,7 @@ export default function Sidebar() {
                                 <polyline points="10 17 15 12 10 7" />
                                 <line x1={15} x2={3} y1={12} y2={12} />
                             </svg>
-                        </a>
+                        </Link>
                     </div>
                 </div>
                 {/* End Footer */}

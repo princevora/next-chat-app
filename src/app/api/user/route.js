@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../prisma/db.config";
+import Users from "../../../../DB/models/Users";
 
 const { z } = require("zod");
 
@@ -27,17 +27,10 @@ export async function POST(request) {
 
         const { id } = response.data;
 
-        const user = await prisma.user.findUnique({
-            where: {
-                id
-            }, select: {
-                email: true,
-                username: true,
-                id: true
-            }
-        });
-
-        prisma.$disconnect();
+        const user = await new Users()
+            .select('email', 'username', 'id')
+            .where("id", "=", id)
+            .firstOrError();
 
         if (!user) {
             return NextResponse.json({

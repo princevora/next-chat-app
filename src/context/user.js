@@ -12,6 +12,7 @@ export const useUserContext = () => {
 const UserContextProvider = ({ children }) => {
     const [userData, setUserData] = useState();
     const [userStatus, setUserStatus] = useState();
+    const [chats, setChats] = useState();
     const { data, status } = useSession();
 
     const fetchData = () => new Promise(async (resolve, reject) => {
@@ -33,13 +34,13 @@ const UserContextProvider = ({ children }) => {
 
     useEffect(() => {
         if (status == "authenticated") {
-            setUserStatus("pending")
+            setUserStatus(0) //pending
 
             fetchData()
                 .then((rsp) => {
                     const { user } = rsp;
                     setUserData(user);
-                    setUserStatus("success")
+                    setUserStatus(1) //success
                 })
         }
     }, [status]);

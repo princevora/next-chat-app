@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../prisma/db.config";
+import Users from "../../../../DB/models/Users";
+import Chats from "../../../../DB/models/Chats";
 
 const { z } = require("zod");
 
@@ -29,118 +30,46 @@ export async function POST(request) {
         // Get userId and userchat id from data
         const { userChatId, userId } = response.data;
 
-        const user =await prisma.user.findFirst({
-            where: {
-                id: userId
-            }, select: {
-                username: true
-            }
-        })
+        // Check if user exists
+        const exists = await new Users()
+            .whereIn("id", [userId, userChatId])
+            .exists();
 
-        // check if the user chats already exists..
-        // const exists = prisma.userChats.findFirst({
-        //     where: {
-        //         OR: [
-        //             {
-        //                 user_id: userId,
-        //                 chat: {
-        //                     userChats: {
-        //                         some: {
-        //                             user_id: userChatId
-        //                         }
-        //                     }
-        //                 }
-        //             },
-        //             {
-        //                 user_id: userChatId,
-        //                 chat: {
-        //                     userChats: {
-        //                         some: {
-        //                             user_id: userId
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         ]
-        //     }
-        // })
+        if (!exists) {
+            return NextResponse.json({
+                result: false,
+                message: "No user found."
+            })
+        }
 
-        // check if the user already have the chat..
-        // const exists = await prisma.chat.findFirst({
-        //     where: {
-        //         AND: [
-        //             {
-        //                 participants: {
-        //                     some: {
-        //                         id: userChatId
-        //                     }
-        //                 }
-        //             }
-        //         ]
-        //     }
-        // })
+        // check if the user already have the chats
+        const chatExists = await new Chats()
+            .where("added_by", "=", userId)
+            .where("added_to", "=", userChatId)
+            .orWhere("added_by", "=", userChatId)
+            .orWhere("added_to", "=", userId)
+            .exists()
 
-        // const rp = await prisma.chat.create({
-        //     data: {
-        //         userChats: {
-        //             create: [
-        //                 { user: { connect: { id: userId } }},
-        //                 { user: { connect: { id: userChatId } }},
-        //             ]
-        //         }
-        //     }
-        // })
+        if (chatExists) {
+            return NextResponse.json({
+                result: false,
+                message: "User already have this chat."
+            }, {
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                status: 400
+            })
+        }
 
-        const rp = await prisma.userChats.findMany({
-            where: {
-                user_id: userId,
-            },
-            select: {
-                chat: {
-                    select: {
-                        userChats: {
-                            select: {
-                                user: {
-                                    select: {
-                                        username: true // Selecting only the username field
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-        });
+        const chat = await new Chats()
+            .create({
+                added_by: userId,
+                added_to: userChatId
+            })
+            .save();
 
-        // console.log(rp[0].chat.userChats);
-        // console.log(rp[0].chat.userChats);
-        // console.log(rp);
-        const filteredResult = rp.map(chat => ({
-            username: chat.chat
-        }));
-
-        return NextResponse.json(filteredResult)
-        // if (exists) {
-        //     return NextResponse.json({
-        //         result: false,
-        //         message: "User already have this chat."
-        //     })
-        // }
-
-        // Create a chat
-        // const result = await prisma.chat.create({});
-
-        // Associate the chat with the user
-        // await prisma.userChats.create({
-        //     data: {
-        //         user: { connect: { id: userId } },
-        //         chat: { connect: { id: newChat.id } },
-        //     },
-        // });
-
-        prisma.$disconnect();
-
-        if (!result) {
+        if (!chat) {
             return NextResponse.json({
                 result: false,
                 message: "Unable to add the chat"

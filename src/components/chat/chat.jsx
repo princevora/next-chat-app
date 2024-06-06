@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import MessageInput from '../message-input';
 import { socket } from "@/app/socket";
 import { useMessageContext } from "@/context/message";
+import Users from '../../../DB/models/Users';
 
 export default function Chat() {
     const { allMessages } = useMessageContext();
@@ -13,6 +14,10 @@ export default function Chat() {
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [allMessages]); // Automatically scroll when messages update
+
+    useEffect(() => {
+        console.log("Chat: ", new Users().getChats);
+    }, [])
 
     useEffect(() => {
         if (!socket) return;

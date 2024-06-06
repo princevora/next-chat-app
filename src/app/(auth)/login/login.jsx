@@ -3,7 +3,7 @@
 import UserLoginSkeleton from "@/components/skeletons/register";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { signIn } from "next-auth/react"
+import { signIn, useSession } from "next-auth/react"
 import toast from "react-hot-toast";
 
 export default function Login() {
@@ -13,6 +13,7 @@ export default function Login() {
         password: ""
     });
 
+    const { status } = useSession();
     const linkRef = useRef();
     const homeLinkRef = useRef();
 
@@ -25,6 +26,10 @@ export default function Login() {
             clearTimeout(tmId);
         }
     }, []);
+
+    useEffect(() => {
+        console.log("Status: ", status);
+    }, [status]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;

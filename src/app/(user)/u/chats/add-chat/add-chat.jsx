@@ -19,7 +19,7 @@ export default function AddChat() {
     const homeLinkRef = useRef(null);
     const inputRef = useRef(null);
     const apiEndpoint = "http://localhost:3000";
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
 
     useEffect(() => {
         const tmid = setTimeout(() => {
@@ -65,6 +65,7 @@ export default function AddChat() {
             toast.error("Something went wrong");
         }
 
+        // Set users
         setUsers(response);
 
         const tmId = setTimeout(() => {
@@ -93,7 +94,11 @@ export default function AddChat() {
         })
 
         if (!response.ok) {
-            reject(false)
+            // get json response
+            const json = await response.json();
+
+            // reject the response
+            reject(json?.message || "Unable to add the chat")
         }
 
         resolve(true)
@@ -117,16 +122,17 @@ export default function AddChat() {
         toast.promise(response, {
             loading: "Adding user", //Show loading
             success: "Successfully added the user", //Show success
-            error: "Unable to add the user" //show error
-        }).then(() => {
-
-            // return to home
-            homeLinkRef.current.click();
+            error: (err) => err //show error
         })
+
+        setisPending({
+            userId: id,
+            state: false
+        });
     }
 
     return (
-        isLoaded || isPending.state ? <div className="relative flex justify-center items-center h-screen">
+        isLoaded  ? <div className="relative flex justify-center items-center h-screen">
             <div className="mx-auto transition delay-150 duration-300 ease-in-out">
                 <div className="flex flex-col sticky duration-1000 top-4 bg-white border shadow-sm rounded-xl dark:bg-neutral-900 dark:border-neutral-700 dark:shadow-neutral-700/70">
                     <div className="flex justify-between items-center border-b rounded-t-xl py-3 px-4 md:px-5 dark:border-neutral-700">

@@ -1,7 +1,7 @@
-import prisma from "../../../../../prisma/db.config";
 import { userSchema } from "../request-schema";
 import { NextResponse } from "next/server";
-import bcrypt, { hash } from "bcrypt";
+import bcrypt from "bcrypt";
+import Users from "../../../../../DB/models/Users";
 
 export async function POST(req, res) {
     const data = await req.json()
@@ -28,14 +28,7 @@ export async function POST(req, res) {
     let hashPassword = await bcrypt.hash(password, 10);
 
     // check if the user already exists.
-    const exists = await prisma.user.findFirst({
-        where: {
-            OR: [
-                { email: email },
-                { username: username }
-            ]
-        }
-    });
+    const exists = await new Users().where("email", "=", email).orWhere("username", '=', username).exists();
 
     if (exists) {
         return new NextResponse(JSON.stringify({ success: false, message: "A user with this email or username aleready exists." }), {
@@ -47,16 +40,13 @@ export async function POST(req, res) {
     }
 
     try {
-        // Create user
-        await prisma.user.create({
-            data: {
-                password: hashPassword,
-                email,
-                username
-            }
-        })
 
-        prisma.$disconnect();
+        // Create user
+        await new Users().create({
+            password: hashPassword,
+            username,
+            email,
+        }).save(); //Save the user
 
         // return success when the user is created.
         return new NextResponse(JSON.stringify({ success: true, message: "User has been registered" }), { status: 200 });

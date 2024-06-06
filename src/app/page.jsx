@@ -1,9 +1,6 @@
 "use client";
 
-import Chat from "@/components/chat";
 import LandingPage from "@/components/home/landing";
-import MessageInput from "@/components/message-input";
-import SetUsername from "@/components/set-username";
 
 export default function Home() {
   return (

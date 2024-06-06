@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../prisma/db.config";
 import { getSession } from "next-auth/react";
+import Users from "../../../../DB/models/Users";
+import { getToken } from "next-auth/jwt";
+import { DB } from "tspace-mysql";
 
 const { z } = require("zod");
 
@@ -10,8 +12,8 @@ const requestSchema = z.object({
 
 export async function POST(request) {
 
-    const session = await getSession({ req: request });
-    const userid = session?.user?.id;
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    const userid = token?.id;
 
     try {
         const json = await request.json();
@@ -33,22 +35,11 @@ export async function POST(request) {
         const { value } = response.data;
 
         // Find user
-        const users = await prisma.user.findMany({
-            where: {
-                NOT: {
-                    id: userid
-                },
-                username: {
-                    startsWith: value
-                }
-            },
-            select: {
-                username: true,
-                id: true
-            }
-        });
-
-        prisma.$disconnect();
+        const users = await new DB("users")
+            .where("username", "LIKE", `%${value}%`)
+            .where("id", "!=", userid)
+            .select("username", "id")
+            .get();
 
         if (!users) {
             return NextResponse.json({ result: false }, {
@@ -59,7 +50,7 @@ export async function POST(request) {
         }
 
         // Return user
-        return NextResponse.json({ result: true, users }, {
+        return NextResponse.json({ result: true, users: users }, {
             headers: {
                 "Content-Type": "application/json",
             },

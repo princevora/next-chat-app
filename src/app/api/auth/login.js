@@ -1,6 +1,4 @@
-import prisma from "../../../../prisma/db.config";
-import { userSchema } from "./request-schema";
-import { NextResponse } from "next/server";
+import Users from "../../../../DB/models/Users";
 import bcrypt from "bcrypt";
 
 export function login(email, password) {
@@ -8,19 +6,15 @@ export function login(email, password) {
     return new Promise(async (resolve, reject) => {
 
         // check if the user already exists.
-        const user = await prisma.user.findUnique({
-            where: {
-                email,
-            }
-        });
+        const exists = new Users().where("email", "=", email).exists();
 
-        prisma.$disconnect();
-
-        if (!user) {
+        if (!exists) {
             reject(ObjectResponse("No user found with this provided email", 401, true));
         }
 
         try {
+            // get user data
+            const user = await new Users().where("email", "=", email).first();
 
             // Get user password to compare to hash
             const passwordMatch = await bcrypt.compare(password, user.password);
@@ -28,6 +22,7 @@ export function login(email, password) {
             if (!passwordMatch) {
                 reject(ObjectResponse("The provided password did not match", 401, true));
             }
+
             // return success when the user is created.
             resolve({
                 id: user.id,
