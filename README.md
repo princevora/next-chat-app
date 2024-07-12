@@ -14,7 +14,7 @@ yarn dev
 ```
 
 # or
-```
+```bash
 pnpm dev
 ```
 
