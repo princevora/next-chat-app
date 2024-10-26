@@ -1,4 +1,4 @@
-import Users from "../../../../DB/models/Users";
+import Users from "../../../../DB/models/User";
 import bcrypt from "bcrypt";
 
 export function login(email, password) {

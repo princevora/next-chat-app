@@ -1,6 +1,5 @@
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server"
-import { socket } from "./app/socket";
 
 export { default } from "next-auth/middleware"
 
@@ -10,8 +9,6 @@ export async function middleware(request) {
     const { pathname } = url;
 
     const userURI = "/u/home";
-
-    console.log(token);
 
     if (token && (
         pathname.startsWith("/login") ||

@@ -1,4 +1,5 @@
 import { Blueprint, Model } from 'tspace-mysql'
+import User from './User'
 class Messages extends Model {
   constructor() {
     super()
@@ -10,6 +11,7 @@ class Messages extends Model {
      * this.useDebug() 
     */
     this.usePrimaryKey('id')
+    this.hasMany({name: 'user', model: User})
 
     this.useTimestamp({
       createdAt: 'created_at',

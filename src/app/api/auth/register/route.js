@@ -1,7 +1,7 @@
 import { userSchema } from "../request-schema";
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
-import Users from "../../../../../DB/models/Users";
+import Users from "../../../../../DB/models/User";
 
 export async function POST(req, res) {
     const data = await req.json()

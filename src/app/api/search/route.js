@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "next-auth/react";
-import Users from "../../../../DB/models/Users";
+import Users from "../../../../DB/models/User";
 import { getToken } from "next-auth/jwt";
 import { DB } from "tspace-mysql";
 

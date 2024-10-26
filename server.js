@@ -65,6 +65,8 @@ app.prepare().then(() => {
       }
 
       console.log(message);
+      // Import messages to database.
+
       io.to(users[username]).emit("receive-message", message);
     })
 

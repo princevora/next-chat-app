@@ -1,4 +1,5 @@
 import { Blueprint, DB, Model } from 'tspace-mysql';
+import Message from './Message';
 
 class Users extends Model {
   constructor() {
@@ -10,7 +11,8 @@ class Users extends Model {
      *
      * this.useDebug() 
     */
-    this.usePrimaryKey('id')
+    this.usePrimaryKey('id');
+    this.belongsToMany({name: 'chats', model: Message});
 
     this.useSchema({
       id: new Blueprint().int().notNull().primary().autoIncrement(),

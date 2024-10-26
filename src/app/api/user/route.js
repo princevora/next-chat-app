@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import Users from "../../../../DB/models/Users";
-import Chats from "../../../../DB/models/Chats";
+import Users from "../../../../DB/models/User";
+import Chats from "../../../../DB/models/Chat";
 import { DB, Repository } from "tspace-mysql";
 
 const { z } = require("zod");

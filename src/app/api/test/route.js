@@ -1,4 +1,4 @@
-import Users from "../../../../DB/models/Users";
+import Users from "../../../../DB/models/User";
 
 export async function POST(){
     const email = "princavor@ga.conm";
