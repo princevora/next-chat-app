@@ -1,18 +1,20 @@
 "use client";
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { socket } from '@/app/socket';
 import { useMessageContext } from '@/context/message';
+import { useUserContext } from '@/context/user';
 
-function MessageInput() {
+function MessageInput(props) {
     const [message, setMessage] = useState("");
     const messageContext = useMessageContext();
     const buttonRef = useRef();
     const formRef = useRef();
     const inputRef = useRef();
+    const userContext = useUserContext();
 
     const handleKeyDown = (e) => {
 
-        if(e.ctrlKey && e.key == "/"){
+        if (e.ctrlKey && e.key == "/") {
             // focus the input 
             inputRef.current.focus();
         }
@@ -42,7 +44,7 @@ function MessageInput() {
         // Prevent default the event
         e.preventDefault();
 
-        if(!message){
+        if (!message) {
             return;
         }
 
@@ -51,14 +53,22 @@ function MessageInput() {
 
         // reset the input
         setMessage("");
-    
-        // const messageObject = {
-        //     message,
-            
-        // }
 
-        socket.emit("send-message", );
-        messageContext.setAllMessages(prev => [...prev,message]);
+        const data = {
+            type: 0,
+            msg: message,
+            username: props?.username,
+            sender: userContext.userData.username
+        }
+
+        socket.emit("send-message", data);
+
+        messageContext.setAllMessages(prev => [...prev, {
+            type: 0,
+            message,
+            username: userContext.userData.username,
+            sender: userContext.userData.username
+        }]);
     }
 
     return (

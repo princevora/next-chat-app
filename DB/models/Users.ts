@@ -1,5 +1,4 @@
 import { Blueprint, DB, Model } from 'tspace-mysql';
-import { connecton as tConnection } from '../connection';
 
 class Users extends Model {
   constructor() {
@@ -72,13 +71,6 @@ class Users extends Model {
  * 
  * @returns { DB }
  */
-
-export const getConnection = async () => {
-  // Export connection
-  const connection = await new DB().getConnection({ ...tConnection });
-
-  return new DB("users").bind(connection);
-}
 
 export { Users }
 export default Users

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import Users from "../../../../DB/models/Users";
+import Chats from "../../../../DB/models/Chats";
+import { DB, Repository } from "tspace-mysql";
 
 const { z } = require("zod");
 
@@ -32,6 +34,26 @@ export async function POST(request) {
             .where("id", "=", id)
             .firstOrError();
 
+        const input = new DB().escape(id);
+
+        const chatsQuery = ` SELECT 
+            chats.id, 
+            chats.adder_user_id, 
+            chats.added_user_id, 
+            users.username AS added_username, 
+            chats.created_at, 
+            chats.updated_at 
+        FROM 
+            chats 
+        INNER JOIN 
+            users ON chats.added_user_id = users.id 
+        WHERE 
+            chats.adder_user_id = ${input}
+    `;
+
+        const chats = await new DB()
+        .rawQuery(chatsQuery);
+
         if (!user) {
             return NextResponse.json({
                 message: "Unable to find user",
@@ -47,6 +69,7 @@ export async function POST(request) {
         // Return user
         return NextResponse.json({
             user,
+            chats,
             success: true
         }, {
             headers: {

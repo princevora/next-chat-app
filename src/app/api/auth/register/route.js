@@ -51,7 +51,6 @@ export async function POST(req, res) {
         // return success when the user is created.
         return new NextResponse(JSON.stringify({ success: true, message: "User has been registered" }), { status: 200 });
     } catch (error) {
-        console.log(error);
         // return error
         return new NextResponse(JSON.stringify({ success: false, message: "Unable to create user" }), { status: 401 });
     }

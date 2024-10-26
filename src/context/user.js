@@ -1,7 +1,10 @@
 "use client";
 
+import { socket } from "@/app/socket";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 const UserContext = createContext();
 
@@ -10,10 +13,17 @@ export const useUserContext = () => {
 }
 
 const UserContextProvider = ({ children }) => {
-    const [userData, setUserData] = useState();
-    const [userStatus, setUserStatus] = useState();
-    const [chats, setChats] = useState();
+    const [userData, setUserData] = useState(null);
+    const [userStatus, setUserStatus] = useState(false);
+    const [chats, setChats] = useState([]);
     const { data, status } = useSession();
+    const pathname = usePathname();
+
+    const emitConnection = () => {
+        if (userData !== null) {
+            socket.emit("user_connected", userData.username)
+        }
+    }
 
     const fetchData = () => new Promise(async (resolve, reject) => {
         const response = await fetch("/api/user", {
@@ -34,20 +44,36 @@ const UserContextProvider = ({ children }) => {
 
     useEffect(() => {
         if (status == "authenticated") {
-            setUserStatus(0) //pending
-
             fetchData()
                 .then((rsp) => {
-                    const { user } = rsp;
+                    const { user, chats } = rsp;
+
+                    console.log(user);
+                    // Set user
                     setUserData(user);
-                    setUserStatus(1) //success
+
+                    // Set chats
+                    setChats(chats);
+
+                    // Set user status
+                    setUserStatus(true) //success
+                })
+                .catch(() => {
+
+                    // return error if anything goes wrong
+                    toast.error("Unable to fetch user data please refresh.")
                 })
         }
     }, [status]);
 
+    useEffect(() => {
+        if(userData && socket && pathname.startsWith("/u/")){
+            return emitConnection();
+        }
+    })
 
     return (
-        <UserContext.Provider value={{ userData, userStatus }}>
+        <UserContext.Provider value={{ userData, userStatus, chats, setChats, emitConnection }}>
             {children}
         </UserContext.Provider>
     )

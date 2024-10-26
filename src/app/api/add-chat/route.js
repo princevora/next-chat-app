@@ -30,6 +30,13 @@ export async function POST(request) {
         // Get userId and userchat id from data
         const { userChatId, userId } = response.data;
 
+        if(userChatId == userId){
+            return NextResponse.json({
+                result: false,
+                message: "You cannot add yourself"
+            })
+        }
+
         // Check if user exists
         const exists = await new Users()
             .whereIn("id", [userId, userChatId])
@@ -44,10 +51,10 @@ export async function POST(request) {
 
         // check if the user already have the chats
         const chatExists = await new Chats()
-            .where("added_by", "=", userId)
-            .where("added_to", "=", userChatId)
-            .orWhere("added_by", "=", userChatId)
-            .orWhere("added_to", "=", userId)
+            .where("adder_user_id", "=", userId)
+            .where("added_user_id", "=", userChatId)
+            .where("adder_user_id", "=", userChatId)
+            .where("added_user_id", "=", userId)
             .exists()
 
         if (chatExists) {
@@ -63,10 +70,10 @@ export async function POST(request) {
         }
 
         const chat = await new Chats()
-            .create({
-                added_by: userId,
-                added_to: userChatId
-            })
+            .createMultiple([
+                { adder_user_id: userId, added_user_id: userChatId }, //Create an entry for author (adder)
+                { adder_user_id: userChatId, added_user_id: userId }, //create an entry for the user that has been added
+            ])
             .save();
 
         if (!chat) {
@@ -90,7 +97,6 @@ export async function POST(request) {
         })
 
     } catch (error) {
-        console.log(error);
         return NextResponse.json({
             message: "Invalid data provided or something went wrong",
             status: 400

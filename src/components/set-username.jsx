@@ -1,13 +1,6 @@
 "use client"
 
-import { useUserContext } from '@/context/user'
-import SetUserSkeleton from './skeletons/set-user';
-import { useEffect, useRef, useState } from 'react';
 import { IconRight, Spinner } from "@/app/ui";
-import toast from 'react-hot-toast';
-import { getToken } from 'next-auth/jwt';
-import { useSession } from 'next-auth/react';
-import Link from 'next/link';
 
 function SetUsername({ handleChange, handleSubmit, isPending, userDetails }) {
 
