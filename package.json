@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev:next": "next dev",
-    "dev:server": "node server.js",
+    "dev:server": "ts-node server.js",
     "dev": "npm-run-all --parallel dev:next dev:server",
     "build": "next build",
     "start": "NODE_ENV=production next start",
@@ -43,6 +43,7 @@
     "npm-run-all": "^4.1.5",
     "postcss": "^8",
     "prisma": "^5.14.0",
-    "tailwindcss": "^3.4.1"
+    "tailwindcss": "^3.4.1",
+    "ts-node": "^10.9.2"
   }
 }

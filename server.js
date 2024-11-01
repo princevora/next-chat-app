@@ -3,7 +3,7 @@ import next from "next";
 import { getSession } from "next-auth/react";
 import { Server as SocketIOServer } from "socket.io";
 import { DB } from "tspace-mysql";
-
+import Messages from "./DB/models/Message.js";
 // Custom server setup for Next.js with Socket.IO
 const dev = process.env.NODE_ENV !== "production";
 const port = process.env.PORT || 3000;
@@ -65,6 +65,8 @@ app.prepare().then(() => {
       }
 
       console.log(message);
+      console.log(Messages);
+      
       // Import messages to database.
 
       io.to(users[username]).emit("receive-message", message);

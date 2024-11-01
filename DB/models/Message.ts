@@ -29,5 +29,4 @@ class Messages extends Model {
     })
   }
 }
-export { Messages }
 export default Messages
